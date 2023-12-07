@@ -7,12 +7,19 @@
 
 import SwiftUI
 import Home
+import ComposableArchitecture
 
 @main
-struct PostalCodeAPIApp: App {
+struct PostalCodeAPIApp: SwiftUI.App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            HomeView(
+                store: .init(
+                    initialState: Home.State()
+                ) {
+                    Home() // ここがないとStateやActionが処理されない
+                }
+            )
         }
     }
 }
