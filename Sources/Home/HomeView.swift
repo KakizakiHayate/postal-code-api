@@ -10,13 +10,17 @@ import ComposableArchitecture
 
 public struct Home: Reducer {
     public struct State: Equatable {
-        var text = "kk"
+        var text = ""
         public init() {}
     }
 
     public enum Action: Equatable {
         case onAppear
         case tapped
+        case bindingAction(BindingAction)
+        public enum BindingAction: Equatable {
+            case textChange(String)
+        }
     }
 
     public init() {}
@@ -28,7 +32,11 @@ public struct Home: Reducer {
                 print("onAppearが実行されました。")
                 return .none
             case .tapped:
-                state.text = "uu"
+                state.text = ""
+                return .none
+            case let .bindingAction(.textChange(text)):
+                state.text = text
+                print(state.text)
                 return .none
             }
         }
@@ -47,7 +55,10 @@ public struct HomeView: View {
         WithViewStore(self.store, observe: { $0 }) { viewStore in
             VStack {
                 HStack {
-                    TextField("郵便番号を入力", text: $texts)
+                    TextField(
+                        "郵便番号を入力",
+                        text: viewStore.binding(get: { $0.text }, send: { .bindingAction(.textChange($0)) })
+                    )
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                     Button {
                         viewStore.send(.tapped)
