@@ -7,16 +7,19 @@
 
 import SwiftUI
 import ComposableArchitecture
+import AddressResultFeature
 
 public struct Home: Reducer {
     public struct State: Equatable {
         var text = ""
+        var addressResult = AddressResult.State()
         public init() {}
     }
 
     public enum Action: Equatable {
         case onAppear
         case tapped
+        case addressResult(AddressResult.Action)
         case bindingAction(BindingAction)
         public enum BindingAction: Equatable {
             case textChange(String)
@@ -26,6 +29,9 @@ public struct Home: Reducer {
     public init() {}
 
     public var body: some ReducerOf<Self> {
+        Scope(state: \.addressResult, action: /Action.addressResult) {
+            AddressResult()
+        }
         Reduce<State, Action> { state, action in
             switch action {
             case .onAppear:
@@ -38,6 +44,8 @@ public struct Home: Reducer {
                 state.text = text
                 print(state.text)
                 return .none
+            case .addressResult(_):
+                return .none
             }
         }
     }
@@ -45,7 +53,6 @@ public struct Home: Reducer {
 
 public struct HomeView: View {
     let store: StoreOf<Home>
-    @State private var texts = ""
 
     public init(store: StoreOf<Home>) {
         self.store = store
@@ -59,7 +66,7 @@ public struct HomeView: View {
                         "郵便番号を入力",
                         text: viewStore.binding(get: { $0.text }, send: { .bindingAction(.textChange($0)) })
                     )
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
                     Button {
                         viewStore.send(.tapped)
                     } label: {
@@ -71,6 +78,12 @@ public struct HomeView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                 }
                 Text("\(viewStore.text)")
+                AddressResultView(
+                    store: store.scope(
+                        state: \.addressResult,
+                        action: { .addressResult($0) }
+                    )
+                )
             }
             .padding()
         }

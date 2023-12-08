@@ -22,13 +22,14 @@ let package = Package(
         .target(
             name: "Home",
             dependencies: [
+                "AddressResultFeature",
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
             ]
         ),
         .target(
             name: "AddressResultFeature",
             dependencies: [
-//                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
             ]
         ),
     ]
