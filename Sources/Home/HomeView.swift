@@ -8,48 +8,80 @@
 import SwiftUI
 import ComposableArchitecture
 import AddressResultFeature
+import Entity
+import ZipCloudAPIClient
+import Dependencies
 
 public struct Home: Reducer {
     public struct State: Equatable {
         var text = ""
         var addressResult = AddressResult.State()
+        var isLoading = false
+        var results = [Result]()
+
         public init() {}
     }
 
-    public enum Action: Equatable {
+    public enum Action {
         case onAppear
-        case tapped
+        case search
         case addressResult(AddressResult.Action)
         case bindingAction(BindingAction)
+        case searchAddress(Swift.Result<[Result], Error>)
         public enum BindingAction: Equatable {
             case textChange(String)
         }
     }
 
+    @Dependency(\.zipCloudAPIClient) var zipCloudAPIClient
+
     public init() {}
 
     public var body: some ReducerOf<Self> {
-        Scope(state: \.addressResult, action: /Action.addressResult) {
+        Scope(
+            state: \.addressResult,
+            action: /Action.addressResult
+        ) {
             AddressResult()
         }
+
         Reduce<State, Action> { state, action in
             switch action {
             case .onAppear:
                 print("onAppearが実行されました。")
                 return .none
-            case .tapped:
-                state.text = ""
-                return .none
+            case .search:
+                state.isLoading = true
+                return .run {
+                    await $0(
+                        .searchAddress(
+                            Swift.Result { try await zipCloudAPIClient.searchAddresses("2700011") }
+                        )
+                    )
+                }
             case let .bindingAction(.textChange(text)):
                 state.text = text
                 print(state.text)
                 return .none
             case .addressResult(_):
                 return .none
+            case let .searchAddress(result):
+                state.isLoading = false
+
+                switch result {
+                case let .success(addresses):
+                    state.results = addresses
+                    print("response::\(state.results[0])")
+                case let .failure(error):
+                    print(error)
+                }
+                return .none
             }
         }
     }
 }
+
+
 
 public struct HomeView: View {
     let store: StoreOf<Home>
@@ -68,7 +100,7 @@ public struct HomeView: View {
                     )
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     Button {
-                        viewStore.send(.tapped)
+                        viewStore.send(.search)
                     } label: {
                         Text("検索")
                     }
