@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  Result.swift
+//
 //
 //  Created by 柿崎逸 on 2023/12/07.
 //
@@ -14,8 +14,6 @@ public struct Result: Codable, Equatable {
     public let kana1: String
     public let kana2: String
     public let kana3: String
-    public let prefcode: String
-    public let zipcode: String
 
     public init(
         address1: String,
@@ -23,9 +21,7 @@ public struct Result: Codable, Equatable {
         address3: String,
         kana1: String,
         kana2: String,
-        kana3: String,
-        prefcode: String,
-        zipcode: String
+        kana3: String
     ) {
         self.address1 = address1
         self.address2 = address2
@@ -33,7 +29,5 @@ public struct Result: Codable, Equatable {
         self.kana1 = kana1
         self.kana2 = kana2
         self.kana3 = kana3
-        self.prefcode = prefcode
-        self.zipcode = zipcode
     }
 }
