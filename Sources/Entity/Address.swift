@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Address: Codable {
+public struct Address: Codable, Equatable {
     public let results: [Result]
     public let status: Int
 
